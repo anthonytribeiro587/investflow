@@ -1,0 +1,3 @@
+import { Shell } from "@/components/Shell";
+import { filiais } from "@/lib/data";
+export default function Filiais(){return <Shell title="Filiais" subtitle="Cadastro de filiais, área, gerente e diretor responsável."><section className="panel"><div className="panel-top"><div><h2>Filiais</h2><p>Base para roteamento automático das solicitações.</p></div><button className="action-button">Nova filial</button></div><table><thead><tr><th>Código</th><th>Filial</th><th>Área</th><th>Diretor</th><th>Gerente</th><th>Cidade</th></tr></thead><tbody>{filiais.map(f=><tr key={f.codigo}><td>{f.codigo}</td><td>{f.filial}</td><td>{f.area}</td><td>{f.diretor}</td><td>{f.gerente}</td><td>{f.cidade}</td></tr>)}</tbody></table></section></Shell>}

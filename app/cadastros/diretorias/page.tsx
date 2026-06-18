@@ -1,0 +1,3 @@
+import { Shell } from "@/components/Shell";
+import { diretorias } from "@/lib/data";
+export default function Diretorias(){return <Shell title="Diretorias" subtitle="Áreas responsáveis pelo primeiro filtro de aprovação."><section className="panel"><div className="panel-top"><div><h2>Diretorias/Áreas</h2><p>Filiais são vinculadas a uma área e diretor.</p></div><button className="action-button">Nova diretoria</button></div><table><thead><tr><th>Área</th><th>Diretor</th><th>Filiais</th><th>Status</th></tr></thead><tbody>{diretorias.map(d=><tr key={d.area}><td>{d.area}</td><td>{d.diretor}</td><td>{d.filiais}</td><td>{d.status}</td></tr>)}</tbody></table></section></Shell>}
