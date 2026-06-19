@@ -54,7 +54,12 @@ export default async function Dashboard() {
 
         <KpiCard label="Saldo" value={brl(saldo)} variant="orange" />
 
-        <KpiCard label="Execução" value={`${execucao}%`} variant="purple" />
+        <KpiCard
+  label="Execução"
+  value={`${execucao}%`}
+  variant="purple"
+  progress={execucao}
+/>
       </section>
 
       <div className="dashboard-grid">

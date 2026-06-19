@@ -310,7 +310,7 @@ export default function Solicitacoes() {
             </label>
           </div>
 
-          <div className="table-wrap">
+          <div className="request-table-limited">
             <table>
               <thead>
                 <tr>
