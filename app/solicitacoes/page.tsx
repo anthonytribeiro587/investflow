@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { KpiCard } from "@/components/KpiCard";
 import { Shell } from "@/components/Shell";
 import { supabase } from "@/lib/supabase";
 
@@ -37,9 +38,12 @@ type Solicitacao = {
   justificativa: string | null;
   observacao: string | null;
   observacao_diretoria: string | null;
+  parecer_patrimonio: string | null;
   foto_url: string | null;
   created_at: string;
 };
+
+type AbaSolicitacao = "todas" | "enviadas" | "aprovadas" | "ajustes" | "rejeitadas";
 
 export default function Solicitacoes() {
   const [filiais, setFiliais] = useState<Filial[]>([]);
@@ -64,7 +68,7 @@ export default function Solicitacoes() {
   const [fotoAtualUrl, setFotoAtualUrl] = useState<string | null>(null);
 
   const [busca, setBusca] = useState("");
-  const [filtroStatus, setFiltroStatus] = useState("");
+  const [abaAtiva, setAbaAtiva] = useState<AbaSolicitacao>("todas");
   const [filtroPrioridade, setFiltroPrioridade] = useState("");
 
   const [loading, setLoading] = useState(false);
@@ -76,6 +80,25 @@ export default function Solicitacoes() {
     (s) => s.status === "ajuste_solicitado"
   ).length;
 
+  const enviadas = solicitacoes.filter((s) => s.status === "enviada");
+
+  const aprovadas = solicitacoes.filter(
+    (s) =>
+      s.status === "aprovada_diretoria" ||
+      s.status === "pendente_orcamento" ||
+      s.status === "em_orcamento"
+  );
+
+  const rejeitadas = solicitacoes.filter(
+    (s) =>
+      s.status === "rejeitada_diretoria" ||
+      s.status === "rejeitada_patrimonio"
+  );
+
+  const pendenteOrcamento = solicitacoes.filter(
+    (s) => s.status === "pendente_orcamento"
+  );
+
   const itensFiltrados = useMemo(() => {
     return itens.filter((item) => item.setor_id === setorId);
   }, [itens, setorId]);
@@ -85,9 +108,10 @@ export default function Solicitacoes() {
       ajuste_solicitado: 1,
       enviada: 2,
       rejeitada_diretoria: 3,
-      aprovada_diretoria: 4,
-      em_analise_patrimonio: 5,
-      em_orcamento: 6,
+      rejeitada_patrimonio: 4,
+      aprovada_diretoria: 5,
+      pendente_orcamento: 6,
+      em_orcamento: 7,
     };
 
     return solicitacoes
@@ -106,7 +130,28 @@ export default function Solicitacoes() {
           setor.includes(textoBusca) ||
           item.includes(textoBusca);
 
-        const bateStatus = !filtroStatus || solicitacao.status === filtroStatus;
+        let bateStatus = true;
+
+        if (abaAtiva === "enviadas") {
+          bateStatus = solicitacao.status === "enviada";
+        }
+
+        if (abaAtiva === "aprovadas") {
+          bateStatus =
+            solicitacao.status === "aprovada_diretoria" ||
+            solicitacao.status === "pendente_orcamento" ||
+            solicitacao.status === "em_orcamento";
+        }
+
+        if (abaAtiva === "ajustes") {
+          bateStatus = solicitacao.status === "ajuste_solicitado";
+        }
+
+        if (abaAtiva === "rejeitadas") {
+          bateStatus =
+            solicitacao.status === "rejeitada_diretoria" ||
+            solicitacao.status === "rejeitada_patrimonio";
+        }
 
         const batePrioridade =
           !filtroPrioridade || solicitacao.prioridade === filtroPrioridade;
@@ -124,7 +169,15 @@ export default function Solicitacoes() {
           new Date(a.created_at).getTime()
         );
       });
-  }, [solicitacoes, busca, filtroStatus, filtroPrioridade, filiais, setores, itens]);
+  }, [
+    solicitacoes,
+    busca,
+    abaAtiva,
+    filtroPrioridade,
+    filiais,
+    setores,
+    itens,
+  ]);
 
   async function carregarDados() {
     if (!supabase) return;
@@ -152,10 +205,10 @@ export default function Solicitacoes() {
         supabase
           .from("solicitacoes")
           .select(
-            "id, codigo, ano, filial_id, setor_id, item_catalogo_id, prioridade, status, tipo, semestre_sugerido, semestre_aprovado, justificativa, observacao, observacao_diretoria, foto_url, created_at"
+            "id, codigo, ano, filial_id, setor_id, item_catalogo_id, prioridade, status, tipo, semestre_sugerido, semestre_aprovado, justificativa, observacao, observacao_diretoria, parecer_patrimonio, foto_url, created_at"
           )
           .order("created_at", { ascending: false })
-          .limit(200),
+          .limit(300),
       ]);
 
     setFiliais(filiaisResp.data ?? []);
@@ -405,12 +458,13 @@ export default function Solicitacoes() {
     const mapa: Record<string, string> = {
       enviada: "Enviada",
       ajuste_solicitado: "Ajuste solicitado",
-      rejeitada_diretoria: "Rejeitada",
+      rejeitada_diretoria: "Rejeitada diretoria",
       aprovada_diretoria: "Aprovada",
-      em_analise_patrimonio: "Patrimônio",
-      recusado_investimento: "Recusado",
-      aprovado_investimento: "Aprovado",
+      rejeitada_patrimonio: "Rejeitada patrimônio",
+      pendente_orcamento: "Pendente orçamento",
       em_orcamento: "Em orçamento",
+      recusado_investimento: "Recusado",
+      aprovado_investimento: "Aprovado final",
     };
 
     return mapa[valor] ?? valor;
@@ -422,6 +476,32 @@ export default function Solicitacoes() {
       subtitle="O gerente da loja informa a necessidade; o projeto é definido depois pelo orçamento."
     >
       <div className="request-page">
+        <section className="kpi-grid">
+          <KpiCard
+            label="Enviadas"
+            value={String(enviadas.length)}
+            variant="orange"
+          />
+
+          <KpiCard
+            label="Ajustes solicitados"
+            value={String(ajustesPendentes)}
+            variant="purple"
+          />
+
+          <KpiCard
+            label="Rejeitadas"
+            value={String(rejeitadas.length)}
+            variant="green"
+          />
+
+          <KpiCard
+            label="Pendente orçamento"
+            value={String(pendenteOrcamento.length)}
+            variant="blue"
+          />
+        </section>
+
         {mensagem && (
           <div
             className={
@@ -455,6 +535,43 @@ export default function Solicitacoes() {
             </button>
           </div>
 
+          <div className="tab-row">
+            <button
+              className={abaAtiva === "todas" ? "tab-button active" : "tab-button"}
+              onClick={() => setAbaAtiva("todas")}
+            >
+              Todas ({solicitacoes.length})
+            </button>
+
+            <button
+              className={abaAtiva === "enviadas" ? "tab-button active" : "tab-button"}
+              onClick={() => setAbaAtiva("enviadas")}
+            >
+              Enviadas ({enviadas.length})
+            </button>
+
+            <button
+              className={abaAtiva === "aprovadas" ? "tab-button active" : "tab-button"}
+              onClick={() => setAbaAtiva("aprovadas")}
+            >
+              Aprovadas ({aprovadas.length})
+            </button>
+
+            <button
+              className={abaAtiva === "ajustes" ? "tab-button active" : "tab-button"}
+              onClick={() => setAbaAtiva("ajustes")}
+            >
+              Ajustes ({ajustesPendentes})
+            </button>
+
+            <button
+              className={abaAtiva === "rejeitadas" ? "tab-button active" : "tab-button"}
+              onClick={() => setAbaAtiva("rejeitadas")}
+            >
+              Rejeitadas ({rejeitadas.length})
+            </button>
+          </div>
+
           <div className="form-grid compact">
             <label>
               Buscar
@@ -463,22 +580,6 @@ export default function Solicitacoes() {
                 onChange={(e) => setBusca(e.target.value)}
                 placeholder="Código, filial, setor ou item"
               />
-            </label>
-
-            <label>
-              Status
-              <select
-                value={filtroStatus}
-                onChange={(e) => setFiltroStatus(e.target.value)}
-              >
-                <option value="">Todos</option>
-                <option value="ajuste_solicitado">Ajuste solicitado</option>
-                <option value="enviada">Enviada</option>
-                <option value="aprovada_diretoria">Aprovada</option>
-                <option value="rejeitada_diretoria">Rejeitada</option>
-                <option value="em_analise_patrimonio">Patrimônio</option>
-                <option value="em_orcamento">Em orçamento</option>
-              </select>
             </label>
 
             <label>
@@ -496,7 +597,7 @@ export default function Solicitacoes() {
             </label>
           </div>
 
-          <div className="request-table-limited">
+          <div className="request-table-limited diretoria-table">
             <table>
               <thead>
                 <tr>
@@ -821,7 +922,7 @@ export default function Solicitacoes() {
 
               {detalhe.status === "ajuste_solicitado" && (
                 <div className="warning-banner compact-warning">
-                  ⚠️ A diretoria solicitou ajuste nesta solicitação. Revise as
+                  ⚠️ Foi solicitado ajuste nesta solicitação. Revise as
                   informações e reenvie para análise.
                 </div>
               )}
@@ -838,11 +939,23 @@ export default function Solicitacoes() {
 
               <div className="detail-block">
                 <strong>Retorno da diretoria</strong>
-                <p>{detalhe.observacao_diretoria || "Sem retorno da diretoria."}</p>
+                <p>
+                  {detalhe.observacao_diretoria ||
+                    "Sem retorno da diretoria."}
+                </p>
+              </div>
+
+              <div className="detail-block">
+                <strong>Retorno do patrimônio</strong>
+                <p>
+                  {detalhe.parecer_patrimonio ||
+                    "Sem retorno do patrimônio."}
+                </p>
               </div>
 
               <div className="detail-block">
                 <strong>Foto da necessidade</strong>
+
                 {detalhe.foto_url ? (
                   <img
                     src={detalhe.foto_url}
