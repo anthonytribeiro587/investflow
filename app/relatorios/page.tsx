@@ -171,38 +171,45 @@ export default function Relatorios() {
   }, []);
 
   async function carregarDados() {
-    setLoading(true);
-
-    const { data, error } = await supabase
-      .from("solicitacoes")
-      .select(`
-        id,
-        codigo,
-        ano,
-        prioridade,
-        status,
-        tipo,
-        valor_orcado,
-        fornecedor_orcamento,
-        created_at,
-        filial_id,
-        setor_id,
-        descricao_item_manual,
-        filiais ( nome_filial ),
-        setores ( nome ),
-        itens_catalogo ( nome_item )
-      `)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Erro relatórios:", error);
-      setSolicitacoes([]);
-    } else {
-      setSolicitacoes((data || []) as SolicitacaoRelatorio[]);
-    }
-
+  if (!supabase) {
+    console.error("Supabase não configurado.");
+    setSolicitacoes([]);
     setLoading(false);
+    return;
   }
+
+  setLoading(true);
+
+  const { data, error } = await supabase
+    .from("solicitacoes")
+    .select(`
+      id,
+      codigo,
+      ano,
+      prioridade,
+      status,
+      tipo,
+      valor_orcado,
+      fornecedor_orcamento,
+      created_at,
+      filial_id,
+      setor_id,
+      descricao_item_manual,
+      filiais ( nome_filial ),
+      setores ( nome ),
+      itens_catalogo ( nome_item )
+    `)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Erro relatórios:", error);
+    setSolicitacoes([]);
+  } else {
+    setSolicitacoes((data ?? []) as unknown as SolicitacaoRelatorio[]);
+  }
+
+  setLoading(false);
+}
 
   const anos = useMemo(() => {
     return Array.from(new Set(solicitacoes.map((s) => s.ano))).sort(
@@ -368,10 +375,12 @@ export default function Relatorios() {
 
     URL.revokeObjectURL(url);
   }
-
-  return (
-    <Shell>
-      <div style={styles.page}>
+    return (
+  <Shell
+    title="Relatórios"
+    subtitle="Visão geral dos investimentos por filial, setor, orçamento e valor."
+  >
+    <div style={styles.page}>
         <div style={styles.header}>
           <div>
             <h1 style={styles.title}>Relatórios</h1>
