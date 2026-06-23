@@ -17,14 +17,17 @@ type SolicitacaoRelatorio = {
   filial_id: string | null;
   setor_id: string | null;
   descricao_item_manual: string | null;
-  filiais: { nome_filial: string | null } | null;
+  filiais: {
+    nome_filial: string | null;
+    diretor_responsavel: string | null;
+  } | null;
   setores: { nome: string | null } | null;
   itens_catalogo: { nome_item: string | null } | null;
 };
 
 const styles: Record<string, CSSProperties> = {
   page: { display: "flex", flexDirection: "column", gap: 22 },
-  actions: { display: "flex", justifyContent: "flex-end" },
+  actions: { display: "flex", justifyContent: "flex-end", gap: 12, flexWrap: "wrap" },
   exportButton: {
     border: 0,
     background: "#07111f",
@@ -79,7 +82,7 @@ const styles: Record<string, CSSProperties> = {
   panelSubtitle: { margin: "6px 0 0", color: "#64748b", fontSize: 14 },
   filterGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
     gap: 14,
   },
   select: {
@@ -140,7 +143,7 @@ const styles: Record<string, CSSProperties> = {
     borderRadius: 18,
     overflow: "hidden",
   },
-  tableScroller: { maxHeight: 420, overflowY: "auto", overflowX: "hidden" },
+  tableScroller: { maxHeight: 420, overflowY: "auto", overflowX: "auto" },
   table: {
     width: "100%",
     tableLayout: "fixed",
@@ -205,6 +208,7 @@ export default function Relatorios() {
   const [loading, setLoading] = useState(true);
   const [anoFiltro, setAnoFiltro] = useState("todos");
   const [filialFiltro, setFilialFiltro] = useState("todos");
+  const [diretoriaFiltro, setDiretoriaFiltro] = useState("todos");
   const [setorFiltro, setSetorFiltro] = useState("todos");
   const [statusFiltro, setStatusFiltro] = useState("todos");
 
@@ -236,7 +240,7 @@ export default function Relatorios() {
         filial_id,
         setor_id,
         descricao_item_manual,
-        filiais ( nome_filial ),
+        filiais ( nome_filial, diretor_responsavel ),
         setores ( nome ),
         itens_catalogo ( nome_item )
       `)
@@ -286,6 +290,16 @@ export default function Relatorios() {
     );
   }, [solicitacoes]);
 
+  const diretorias = useMemo(() => {
+    return Array.from(
+      new Set(
+        solicitacoes
+          .map((s) => s.filiais?.diretor_responsavel)
+          .filter(Boolean) as string[]
+      )
+    ).sort((a, b) => a.localeCompare(b));
+  }, [solicitacoes]);
+
   const statusDisponiveis = useMemo(() => {
     return Array.from(
       new Set(solicitacoes.map((s) => s.status).filter(Boolean) as string[])
@@ -297,11 +311,24 @@ export default function Relatorios() {
       return (
         (anoFiltro === "todos" || String(s.ano) === anoFiltro) &&
         (filialFiltro === "todos" || s.filial_id === filialFiltro) &&
+        (diretoriaFiltro === "todos" ||
+          s.filiais?.diretor_responsavel === diretoriaFiltro) &&
         (setorFiltro === "todos" || s.setor_id === setorFiltro) &&
         (statusFiltro === "todos" || s.status === statusFiltro)
       );
     });
-  }, [solicitacoes, anoFiltro, filialFiltro, setorFiltro, statusFiltro]);
+  }, [
+    solicitacoes,
+    anoFiltro,
+    filialFiltro,
+    diretoriaFiltro,
+    setorFiltro,
+    statusFiltro,
+  ]);
+
+  const orcadosFiltrados = useMemo(() => {
+    return filtradas.filter((s) => s.status === "orcamento_concluido");
+  }, [filtradas]);
 
   const total = filtradas.length;
 
@@ -320,12 +347,19 @@ export default function Relatorios() {
     0
   );
 
+  const valorOrcadoConselho = orcadosFiltrados.reduce(
+    (acc, s) => acc + Number(s.valor_orcado || 0),
+    0
+  );
+
   const filiaisAtendidas = new Set(
     filtradas.filter((s) => s.filial_id).map((s) => s.filial_id)
   ).size;
 
-  const setoresAtendidos = new Set(
-    filtradas.filter((s) => s.setor_id).map((s) => s.setor_id)
+  const diretoriasAtendidas = new Set(
+    filtradas
+      .map((s) => s.filiais?.diretor_responsavel)
+      .filter(Boolean)
   ).size;
 
   const resumoPorFilial = useMemo(() => {
@@ -356,6 +390,22 @@ export default function Relatorios() {
     return Array.from(mapa.entries()).sort((a, b) => b[1].qtd - a[1].qtd);
   }, [filtradas]);
 
+  const resumoPorDiretoria = useMemo(() => {
+    const mapa = new Map<string, { qtd: number; valor: number }>();
+
+    orcadosFiltrados.forEach((s) => {
+      const nome = s.filiais?.diretor_responsavel || "Sem diretoria";
+      const atual = mapa.get(nome) || { qtd: 0, valor: 0 };
+      atual.qtd += 1;
+      atual.valor += Number(s.valor_orcado || 0);
+      mapa.set(nome, atual);
+    });
+
+    return Array.from(mapa.entries()).sort((a, b) =>
+      a[0].localeCompare(b[0])
+    );
+  }, [orcadosFiltrados]);
+
   const resumoPorStatus = useMemo(() => {
     const mapa = new Map<string, number>();
 
@@ -368,35 +418,57 @@ export default function Relatorios() {
   }, [filtradas]);
 
   const topInvestimentos = useMemo(() => {
-    return [...filtradas]
+    return [...orcadosFiltrados]
       .sort((a, b) => Number(b.valor_orcado || 0) - Number(a.valor_orcado || 0))
       .slice(0, 10);
-  }, [filtradas]);
+  }, [orcadosFiltrados]);
 
   function limparFiltros() {
     setAnoFiltro("todos");
     setFilialFiltro("todos");
+    setDiretoriaFiltro("todos");
     setSetorFiltro("todos");
     setStatusFiltro("todos");
   }
 
   function exportarCsv() {
-    const linhas = filtradas.map((s) => ({
-      Codigo: s.codigo || "",
-      Ano: s.ano,
-      Filial: s.filiais?.nome_filial || "Sem filial",
-      Setor: s.setores?.nome || "Sem setor",
-      Item:
-        s.itens_catalogo?.nome_item ||
-        s.descricao_item_manual ||
-        "Sem item",
-      Tipo: normalizar(s.tipo),
-      Status: normalizar(s.status),
-      Valor: s.valor_orcado || 0,
-      Fornecedor: s.fornecedor_orcamento || "",
-    }));
+    const linhas = [...orcadosFiltrados]
+      .sort((a, b) => {
+        const diretoriaA = a.filiais?.diretor_responsavel || "";
+        const diretoriaB = b.filiais?.diretor_responsavel || "";
+        const filialA = a.filiais?.nome_filial || "";
+        const filialB = b.filiais?.nome_filial || "";
 
-    if (!linhas.length) return;
+        return (
+          diretoriaA.localeCompare(diretoriaB) ||
+          filialA.localeCompare(filialB) ||
+          Number(b.valor_orcado || 0) - Number(a.valor_orcado || 0)
+        );
+      })
+      .map((s) => ({
+        Diretoria: s.filiais?.diretor_responsavel || "Sem diretoria",
+        Codigo: s.codigo || "",
+        Ano: s.ano,
+        Filial: s.filiais?.nome_filial || "Sem filial",
+        Setor: s.setores?.nome || "Sem setor",
+        Item:
+          s.itens_catalogo?.nome_item ||
+          s.descricao_item_manual ||
+          "Sem item",
+        Tipo: normalizar(s.tipo),
+        Status: normalizar(s.status),
+        Valor: s.valor_orcado || 0,
+        Fornecedor: s.fornecedor_orcamento || "",
+      }));
+
+    baixarCsv("itens-orcados-por-diretoria.csv", linhas);
+  }
+
+  function baixarCsv(nomeArquivo: string, linhas: Record<string, string | number>[]) {
+    if (!linhas.length) {
+      window.alert("Não há itens orçados para exportar com os filtros atuais.");
+      return;
+    }
 
     const cabecalho = Object.keys(linhas[0]).join(";");
     const corpo = linhas
@@ -407,18 +479,27 @@ export default function Relatorios() {
       )
       .join("\n");
 
-    const blob = new Blob([`${cabecalho}\n${corpo}`], {
+    const blob = new Blob([`sep=;\n${cabecalho}\n${corpo}`], {
       type: "text/csv;charset=utf-8;",
     });
-
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
 
     link.href = url;
-    link.download = "relatorio-investflow.csv";
+    link.download = nomeArquivo;
     link.click();
 
     URL.revokeObjectURL(url);
+  }
+
+  function exportarResumoDiretoria() {
+    const linhas = resumoPorDiretoria.map(([diretoria, dados]) => ({
+      Diretoria: diretoria,
+      Itens: dados.qtd,
+      "Soma de Valor Total": dados.valor,
+    }));
+
+    baixarCsv("resumo-orcado-por-diretoria.csv", linhas);
   }
 
   return (
@@ -428,8 +509,11 @@ export default function Relatorios() {
     >
       <div style={styles.page}>
         <div style={styles.actions}>
+          <button onClick={exportarResumoDiretoria} style={styles.exportButton}>
+            Exportar resumo por diretoria
+          </button>
           <button onClick={exportarCsv} style={styles.exportButton}>
-            Exportar CSV
+            Exportar itens orçados por diretoria
           </button>
         </div>
 
@@ -449,10 +533,10 @@ export default function Relatorios() {
         </div>
 
         <div style={styles.kpiGrid}>
-          <Kpi label="Valor orçado" value={moeda(valorTotal)} color="#059669" />
-          <Kpi label="Setores atendidos" value={setoresAtendidos} color="#0ea5e9" />
+          <Kpi label="Valor total filtrado" value={moeda(valorTotal)} color="#059669" />
+          <Kpi label="Valor planilha conselho" value={moeda(valorOrcadoConselho)} color="#0ea5e9" />
           <Kpi label="Registros filtrados" value={filtradas.length} color="#f97316" />
-          <Kpi label="Base total" value={solicitacoes.length} color="#64748b" />
+          <Kpi label="Diretorias atendidas" value={diretoriasAtendidas} color="#64748b" />
         </div>
 
         <section style={styles.panel}>
@@ -460,7 +544,7 @@ export default function Relatorios() {
             <div>
               <h2 style={styles.panelTitle}>Filtros rápidos</h2>
               <p style={styles.panelSubtitle}>
-                Refine a visão por ano, filial, setor ou status.
+                Refine a visão por ano, diretoria, filial, setor ou status.
               </p>
             </div>
 
@@ -497,6 +581,19 @@ export default function Relatorios() {
             </select>
 
             <select
+              value={diretoriaFiltro}
+              onChange={(e) => setDiretoriaFiltro(e.target.value)}
+              style={styles.select}
+            >
+              <option value="todos">Todas as diretorias</option>
+              {diretorias.map((diretoria) => (
+                <option key={diretoria} value={diretoria}>
+                  {diretoria}
+                </option>
+              ))}
+            </select>
+
+            <select
               value={setorFiltro}
               onChange={(e) => setSetorFiltro(e.target.value)}
               style={styles.select}
@@ -525,6 +622,19 @@ export default function Relatorios() {
         </section>
 
         <div style={styles.gridThree}>
+          <section style={styles.panel}>
+            <h2 style={styles.panelTitle}>Itens orçados por diretoria</h2>
+            <div style={styles.list}>
+              {resumoPorDiretoria.map(([nome, dados]) => (
+                <div key={nome} style={styles.listRow}>
+                  <strong style={styles.listName}>{nome}</strong>
+                  <span style={styles.listValue}>{moeda(dados.valor)}</span>
+                  <span style={styles.badge}>{dados.qtd}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+
           <section style={styles.panel}>
             <h2 style={styles.panelTitle}>Por filial</h2>
             <div style={styles.list}>
@@ -568,9 +678,9 @@ export default function Relatorios() {
         <section style={styles.panel}>
           <div style={styles.panelHeader}>
             <div>
-              <h2 style={styles.panelTitle}>Top investimentos</h2>
+              <h2 style={styles.panelTitle}>Top investimentos orçados</h2>
               <p style={styles.panelSubtitle}>
-                Maiores valores orçados conforme os filtros aplicados.
+                Maiores valores com orçamento concluído, conforme os filtros aplicados.
               </p>
             </div>
 
@@ -583,6 +693,7 @@ export default function Relatorios() {
                 <thead>
                   <tr>
                     <th style={{ ...styles.th, width: 190 }}>Código</th>
+                    <th style={{ ...styles.th, width: 180 }}>Diretoria</th>
                     <th style={{ ...styles.th, width: 210 }}>Filial</th>
                     <th style={{ ...styles.th, width: 150 }}>Setor</th>
                     <th style={styles.th}>Item</th>
@@ -595,13 +706,13 @@ export default function Relatorios() {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td style={styles.td} colSpan={7}>
+                      <td style={styles.td} colSpan={8}>
                         Carregando...
                       </td>
                     </tr>
                   ) : topInvestimentos.length === 0 ? (
                     <tr>
-                      <td style={styles.td} colSpan={7}>
+                      <td style={styles.td} colSpan={8}>
                         Nenhum registro encontrado.
                       </td>
                     </tr>
@@ -610,6 +721,10 @@ export default function Relatorios() {
                       <tr key={s.id}>
                         <td style={{ ...styles.td, fontWeight: 900 }}>
                           {s.codigo || "-"}
+                        </td>
+
+                        <td style={styles.td}>
+                          {s.filiais?.diretor_responsavel || "Sem diretoria"}
                         </td>
 
                         <td style={styles.td}>

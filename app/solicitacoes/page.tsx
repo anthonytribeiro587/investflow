@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { DetailInfoGrid } from "@/components/DetailInfoGrid";
 import { KpiCard } from "@/components/KpiCard";
 import { Shell } from "@/components/Shell";
 import { supabase } from "@/lib/supabase";
@@ -878,47 +879,18 @@ export default function Solicitacoes() {
                 </button>
               </div>
 
-              <div className="detail-grid">
-                <div>
-                  <strong>Data/hora</strong>
-                  <span>{formatarDataHora(detalhe.created_at)}</span>
-                </div>
-
-                <div>
-                  <strong>Filial</strong>
-                  <span>{nomeFilial(detalhe.filial_id)}</span>
-                </div>
-
-                <div>
-                  <strong>Setor</strong>
-                  <span>{nomeSetor(detalhe.setor_id)}</span>
-                </div>
-
-                <div>
-                  <strong>Item</strong>
-                  <span>{nomeItem(detalhe.item_catalogo_id)}</span>
-                </div>
-
-                <div>
-                  <strong>Prioridade</strong>
-                  <span>{traduzPrioridade(detalhe.prioridade)}</span>
-                </div>
-
-                <div>
-                  <strong>Semestre sugerido</strong>
-                  <span>{detalhe.semestre_sugerido ?? "-"}</span>
-                </div>
-
-                <div>
-                  <strong>Semestre aprovado</strong>
-                  <span>{detalhe.semestre_aprovado ?? "Não definido"}</span>
-                </div>
-
-                <div>
-                  <strong>Status</strong>
-                  <span>{traduzStatus(detalhe.status)}</span>
-                </div>
-              </div>
+              <DetailInfoGrid
+                items={[
+                  { label: "Data/hora", value: formatarDataHora(detalhe.created_at) },
+                  { label: "Filial", value: nomeFilial(detalhe.filial_id) },
+                  { label: "Setor", value: nomeSetor(detalhe.setor_id) },
+                  { label: "Item", value: nomeItem(detalhe.item_catalogo_id) },
+                  { label: "Prioridade", value: traduzPrioridade(detalhe.prioridade) },
+                  { label: "Semestre sugerido", value: detalhe.semestre_sugerido ?? "-" },
+                  { label: "Semestre aprovado", value: detalhe.semestre_aprovado ?? "Não definido" },
+                  { label: "Status", value: traduzStatus(detalhe.status) },
+                ]}
+              />
 
               {detalhe.status === "ajuste_solicitado" && (
                 <div className="warning-banner compact-warning">

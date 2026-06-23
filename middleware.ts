@@ -6,7 +6,9 @@ const rotasProtegidas = [
   "/solicitacoes",
   "/diretor",
   "/patrimonio",
-  "/orcamento",
+  "/projetos",
+  "/orcamentos",
+  "/aprovacao-final",
   "/execucao",
   "/relatorios",
   "/cadastros"
@@ -40,7 +42,9 @@ export const config = {
     "/solicitacoes/:path*",
     "/diretor/:path*",
     "/patrimonio/:path*",
-    "/orcamento/:path*",
+    "/projetos/:path*",
+    "/orcamentos/:path*",
+    "/aprovacao-final/:path*",
     "/execucao/:path*",
     "/relatorios/:path*",
     "/cadastros/:path*"

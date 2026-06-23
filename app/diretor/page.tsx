@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { DetailInfoGrid } from "@/components/DetailInfoGrid";
 import { KpiCard } from "@/components/KpiCard";
 import { Shell } from "@/components/Shell";
 import { supabase } from "@/lib/supabase";
@@ -728,37 +729,22 @@ export default function Diretor() {
               </button>
             </div>
 
-            <div className="detail-grid">
-              <div>
-                <strong>Data da solicitação</strong>
-                <span>{formatarDataHora(solicitacaoDetalhe.created_at)}</span>
-              </div>
-
-              <div>
-                <strong>Filial</strong>
-                <span>{nomeFilial(solicitacaoDetalhe.filial_id)}</span>
-              </div>
-
-              <div>
-                <strong>Setor</strong>
-                <span>{nomeSetor(solicitacaoDetalhe.setor_id)}</span>
-              </div>
-
-              <div>
-                <strong>Item</strong>
-                <span>{nomeItem(solicitacaoDetalhe.item_catalogo_id)}</span>
-              </div>
-
-              <div>
-                <strong>Prioridade solicitada</strong>
-                <span>{traduzPrioridade(solicitacaoDetalhe.prioridade)}</span>
-              </div>
-
-              <div>
-                <strong>Status</strong>
-                <span>{traduzStatus(solicitacaoDetalhe.status)}</span>
-              </div>
-            </div>
+            <DetailInfoGrid
+              items={[
+                {
+                  label: "Data da solicitação",
+                  value: formatarDataHora(solicitacaoDetalhe.created_at),
+                },
+                { label: "Filial", value: nomeFilial(solicitacaoDetalhe.filial_id) },
+                { label: "Setor", value: nomeSetor(solicitacaoDetalhe.setor_id) },
+                { label: "Item", value: nomeItem(solicitacaoDetalhe.item_catalogo_id) },
+                {
+                  label: "Prioridade solicitada",
+                  value: traduzPrioridade(solicitacaoDetalhe.prioridade),
+                },
+                { label: "Status", value: traduzStatus(solicitacaoDetalhe.status) },
+              ]}
+            />
 
             <div className="detail-block">
               <strong>Semestre definido pela diretoria</strong>

@@ -3,7 +3,6 @@
 import { useRouter, usePathname } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
-import { FileCheck2 } from "lucide-react";
 import {
   BarChart3,
   Building2,
@@ -28,7 +27,6 @@ const operacional = [
   ["/orcamentos", FileBarChart, "Orçamentos/Cotações"],
   ["/execucao", Settings, "Execução e SAP"],
   ["/relatorios", BarChart3, "Relatórios"],
-  ["/aprovacao-final", FileCheck2, "Aprovação Final"],
 ] as const;
 
 const cadastros = [
