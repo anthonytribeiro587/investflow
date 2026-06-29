@@ -21,8 +21,8 @@ export default function Home() {
 
           <p>
             Planejamento anual, priorização por diretoria, validação
-            patrimonial, orçamento, aprovação externa e acompanhamento de
-            execução.
+            patrimonial, orçamento, aprovação final e acompanhamento
+            gerencial.
           </p>
 
           <Link href="/login" className="primary-button">
@@ -39,7 +39,7 @@ export default function Home() {
             <strong>Workflow multinível</strong>
 
             <p>
-              Loja, diretor, patrimônio, orçamento e execução final.
+              Loja, diretoria, patrimônio, projetos e orçamento.
             </p>
           </div>
         </div>

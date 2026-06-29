@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("admin@investflow.com");
+  const [email, setEmail] = useState("admin@investflowdemo.com");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
@@ -34,7 +34,7 @@ export default function LoginPage() {
       return;
     }
 
-    document.cookie = "investflow-auth=true; path=/; max-age=86400";
+    document.cookie = "investflow-auth=true; path=/; max-age=28800; SameSite=Lax; Secure";
 
     router.push("/dashboard");
     router.refresh();
@@ -53,7 +53,7 @@ export default function LoginPage() {
         </div>
 
         <h1>Login administrativo</h1>
-        <p>Acesse o painel de gestão de investimentos.</p>
+        <p>Ambiente demonstrativo com dados fictícios. Não utilize dados reais nesta versão.</p>
 
         <form onSubmit={entrar} className="login-form">
           <label>

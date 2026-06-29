@@ -1,6 +1,40 @@
-import { InvestmentTable } from "@/components/InvestmentTable";
 import { Shell } from "@/components/Shell";
 
 export default function Execucao() {
-  return <Shell title="Execução e SAP" subtitle="Acompanhamento após aprovação externa do conselho e lançamento pela controladoria."><section className="panel"><div className="panel-top"><div><h2>Situações de execução</h2><p>Comprado não conta como realizado. Realizado só quando entregue, obra concluída ou serviço finalizado.</p></div><button className="action-button">Marcar realizado</button></div><div className="form-grid compact"><label>Código SAP<input placeholder="Projeto SAP" /></label><label>Pedido SAP<input placeholder="Pedido/OC" /></label><label>Valor realizado<input placeholder="R$ 0,00" /></label><label>Data realização<input type="date" /></label></div><InvestmentTable /></section></Shell>;
+  return (
+    <Shell
+      title="Evolução futura"
+      subtitle="Módulo previsto para etapas posteriores, sem promessa de integração neste MVP."
+    >
+      <section className="panel">
+        <div className="panel-top">
+          <div>
+            <h2>Pós-aprovação e integrações</h2>
+            <p>
+              Esta área fica como possibilidade futura. Para a apresentação, o
+              escopo principal termina em solicitação, aprovação, projeto,
+              orçamento e acompanhamento gerencial.
+            </p>
+          </div>
+        </div>
+
+        <div className="roadmap-grid">
+          <div>
+            <strong>Fase 1</strong>
+            <span>Fluxo CAPEX e aprovações</span>
+          </div>
+
+          <div>
+            <strong>Fase 2</strong>
+            <span>Orçamentos, histórico e relatórios</span>
+          </div>
+
+          <div>
+            <strong>Fase futura</strong>
+            <span>Execução, integração ERP/SAP ou lançamentos externos</span>
+          </div>
+        </div>
+      </section>
+    </Shell>
+  );
 }

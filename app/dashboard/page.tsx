@@ -1,9 +1,8 @@
 import { KpiCard } from "@/components/KpiCard";
 import { Shell } from "@/components/Shell";
 import { brl } from "@/lib/data";
+import { DEMO_QUERY_LIMIT, DEMO_TABLE_LIMIT, sampleRows } from "@/lib/demo";
 import { supabase } from "@/lib/supabase";
-
-const VALOR_APROVADO = 21838699.7;
 
 const situacoes = [
   { label: "Em orçamento", value: "em_orcamento" },
@@ -39,9 +38,9 @@ function percentualSituacao(valor: unknown) {
   const normalizado = normalizar(valor);
 
   const mapa: Record<string, number> = {
-    em_orcamento: 50,
-    comprado: 75,
-    em_obra: 90,
+    em_orcamento: 45,
+    comprado: 70,
+    em_obra: 85,
     realizado: 100,
     transferido: 100,
   };
@@ -49,12 +48,16 @@ function percentualSituacao(valor: unknown) {
   return mapa[normalizado] ?? 0;
 }
 
+function valorItem(item: any) {
+  return Number(item.valor_orcado ?? item.valor_total_investimento ?? 0);
+}
+
 export default async function Dashboard() {
   if (!supabase) {
     return (
       <Shell
         title="Dashboard"
-        subtitle="Acompanhamento da execução dos investimentos aprovados"
+        subtitle="Acompanhamento gerencial de investimentos demonstrativos"
       >
         <section className="panel">
           <h2>Supabase não configurado</h2>
@@ -66,9 +69,11 @@ export default async function Dashboard() {
 
   const { data: central } = await supabase
     .from("vw_central_investimentos")
-    .select("*");
+    .select("*")
+    .limit(DEMO_QUERY_LIMIT);
 
-  const base = central ?? [];
+  const base = sampleRows(central ?? []);
+  const amostraTabela = base.slice(0, DEMO_TABLE_LIMIT);
 
   const itensEmOrcamento = base.filter(
     (item: any) => normalizar(item.situacao) === "em_orcamento"
@@ -88,23 +93,26 @@ export default async function Dashboard() {
     return situacao === "realizado" || situacao === "transferido";
   });
 
-  const valorConcluido = itensConcluidos.reduce((acc: number, item: any) => {
-    return acc + Number(item.valor_orcado ?? item.valor_total_investimento ?? 0);
+  const valorAprovado = base.reduce((acc: number, item: any) => {
+    return acc + valorItem(item);
   }, 0);
 
-  const amostraTabela = base.slice(0, 50);
+  const valorConcluido = itensConcluidos.reduce((acc: number, item: any) => {
+    return acc + valorItem(item);
+  }, 0);
 
   return (
     <Shell
       title="Dashboard"
-      subtitle="Acompanhamento da execução dos investimentos aprovados"
+      subtitle="Acompanhamento gerencial com amostra fictícia para apresentação"
     >
+      <section className="demo-note">
+        <strong>Modo apresentação:</strong> dados, filiais, responsáveis e valores
+        foram reduzidos e anonimizados para preservar informações internas.
+      </section>
+
       <section className="kpi-grid">
-        <KpiCard
-          label="Valor aprovado"
-          value={brl(VALOR_APROVADO)}
-          variant="blue"
-        />
+        <KpiCard label="Valor aprovado demo" value={brl(valorAprovado)} variant="blue" />
 
         <KpiCard
           label="Itens em orçamento"
@@ -113,47 +121,40 @@ export default async function Dashboard() {
         />
 
         <KpiCard
-          label="Progresso execução"
+          label="Progresso médio"
           value={`${progressoMedio}%`}
           variant="purple"
           progress={progressoMedio}
         />
 
-        <KpiCard
-          label="Valor concluído"
-          value={brl(valorConcluido)}
-          variant="orange"
-        />
+        <KpiCard label="Valor concluído" value={brl(valorConcluido)} variant="orange" />
       </section>
 
       <div className="dashboard-grid">
         <section className="panel">
-          <h2>Central de Investimentos</h2>
+          <h2>Central de Investimentos Demo</h2>
 
           <p>
-            Itens aprovados pela diretoria, usados como base para acompanhamento
-            de orçamento, execução, SAP e realização.
+            Amostra reduzida para demonstrar o fluxo de solicitação, aprovação,
+            orçamento e acompanhamento gerencial, sem expor dados reais.
           </p>
 
           <p>
-            Exibindo os primeiros {amostraTabela.length} registros da view{" "}
-            <strong>vw_central_investimentos</strong>.
+            Exibindo {amostraTabela.length} registros fictícios de uma base demo
+            limitada a {base.length} itens.
           </p>
 
-          <div className="table-scroll limited">
+          <div className="table-scroll limited compact-dashboard-table">
             <table>
               <thead>
                 <tr>
                   <th>Ano</th>
-                  <th>Semestre</th>
-                  <th>Filial</th>
-                  <th>Diretor</th>
-                  <th>Setor</th>
+                  <th>Sem.</th>
+                  <th>Unidade</th>
                   <th>Projeto</th>
                   <th>Item</th>
-                  <th>Qtd.</th>
-                  <th>Valor aprovado</th>
-                  <th>Execução</th>
+                  <th>Valor</th>
+                  <th>Status</th>
                   <th>%</th>
                 </tr>
               </thead>
@@ -163,21 +164,10 @@ export default async function Dashboard() {
                   <tr key={item.id ?? item.item_projeto_id ?? index}>
                     <td>{item.ano}</td>
                     <td>{item.semestre_sugerido ?? item.semestre}</td>
-                    <td>{item.nome_filial ?? "-"}</td>
-                    <td>{item.diretor_responsavel ?? item.diretoria ?? "-"}</td>
-                    <td>{item.setor ?? "-"}</td>
-                    <td>{item.nome_projeto ?? "-"}</td>
-                    <td>{item.item_nome ?? item.item_projeto ?? "-"}</td>
-                    <td>{item.quantidade ?? 1}</td>
-                    <td>
-                      {brl(
-                        Number(
-                          item.valor_orcado ??
-                            item.valor_total_investimento ??
-                            0
-                        )
-                      )}
-                    </td>
+                    <td>{item.nome_filial ?? `Unidade ${String(index + 1).padStart(2, "0")}`}</td>
+                    <td>{item.nome_projeto ?? "Projeto Demo"}</td>
+                    <td>{item.item_nome ?? item.item_projeto ?? "Item demonstrativo"}</td>
+                    <td>{brl(valorItem(item))}</td>
                     <td>
                       <span className={`status ${item.situacao ?? ""}`}>
                         {nomeSituacao(item.situacao)}
@@ -189,9 +179,7 @@ export default async function Dashboard() {
 
                 {amostraTabela.length === 0 && (
                   <tr>
-                    <td colSpan={11}>
-                      Nenhum item encontrado na central de investimentos.
-                    </td>
+                    <td colSpan={8}>Nenhum item encontrado na central demo.</td>
                   </tr>
                 )}
               </tbody>
@@ -200,7 +188,7 @@ export default async function Dashboard() {
         </section>
 
         <aside className="panel">
-          <h2>Resumo da execução</h2>
+          <h2>Resumo da amostra</h2>
 
           <div className="status-list">
             {situacoes.map((situacao) => (
@@ -208,11 +196,7 @@ export default async function Dashboard() {
                 <span>{situacao.label}</span>
 
                 <strong>
-                  {
-                    base.filter(
-                      (i: any) => normalizar(i.situacao) === situacao.value
-                    ).length
-                  }
+                  {base.filter((i: any) => normalizar(i.situacao) === situacao.value).length}
                 </strong>
               </div>
             ))}
@@ -222,17 +206,17 @@ export default async function Dashboard() {
 
           <div className="status-list">
             <div>
-              <span>Total de itens</span>
+              <span>Total da amostra</span>
               <strong>{base.length}</strong>
             </div>
 
             <div>
-              <span>Itens em orçamento</span>
+              <span>Em orçamento</span>
               <strong>{itensEmOrcamento.length}</strong>
             </div>
 
             <div>
-              <span>Itens concluídos</span>
+              <span>Concluídos</span>
               <strong>{itensConcluidos.length}</strong>
             </div>
 

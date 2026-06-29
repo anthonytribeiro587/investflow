@@ -12,7 +12,6 @@ import {
   FolderKanban,
   LayoutDashboard,
   Package,
-  Settings,
   Store,
   Target,
   Users,
@@ -25,7 +24,7 @@ const operacional = [
   ["/patrimonio", Building2, "Patrimônio"],
   ["/projetos", FolderKanban, "Projetos"],
   ["/orcamentos", FileBarChart, "Orçamentos/Cotações"],
-  ["/execucao", Settings, "Execução e SAP"],
+  ["/execucao", FileBarChart, "Evolução futura"],
   ["/relatorios", BarChart3, "Relatórios"],
 ] as const;
 
@@ -55,7 +54,7 @@ export function Shell({
     }
 
     document.cookie =
-      "investflow-auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      "investflow-auth=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure";
 
     router.push("/login");
     router.refresh();
@@ -120,17 +119,21 @@ export function Shell({
             <p>{subtitle}</p>
           </div>
 
-          <div className="user-pill">
-            <div className="avatar">A</div>
+          <div className="topbar-actions">
+            <span className="demo-badge">Ambiente demo</span>
+
+            <div className="user-pill">
+              <div className="avatar">A</div>
 
             <div className="user-info">
               <strong>Admin Modelo</strong>
               <span>Perfil administrador</span>
             </div>
 
-            <button className="logout-button" onClick={sair}>
-              Sair
-            </button>
+              <button className="logout-button" onClick={sair}>
+                Sair
+              </button>
+            </div>
           </div>
         </header>
 

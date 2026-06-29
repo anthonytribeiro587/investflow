@@ -209,7 +209,7 @@ export default function Solicitacoes() {
             "id, codigo, ano, filial_id, setor_id, item_catalogo_id, prioridade, status, tipo, semestre_sugerido, semestre_aprovado, justificativa, observacao, observacao_diretoria, parecer_patrimonio, foto_url, created_at"
           )
           .order("created_at", { ascending: false })
-          .limit(300),
+          .limit(60),
       ]);
 
     setFiliais(filiaisResp.data ?? []);

@@ -1654,3 +1654,129 @@ textarea {
   justify-content: flex-start !important;
   overflow: hidden !important;
 }
+
+/* Demo / apresentação segura */
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.demo-badge,
+.demo-note {
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+
+.demo-note {
+  display: block;
+  border-radius: 16px;
+  margin-bottom: 18px;
+  padding: 13px 16px;
+  white-space: normal;
+  line-height: 1.45;
+}
+
+.compact-dashboard-table {
+  max-height: 390px !important;
+}
+
+.compact-dashboard-table table {
+  min-width: 0 !important;
+  table-layout: fixed !important;
+}
+
+.compact-dashboard-table th,
+.compact-dashboard-table td {
+  font-size: 12px !important;
+  padding: 11px 10px !important;
+}
+
+.compact-dashboard-table th:nth-child(1),
+.compact-dashboard-table td:nth-child(1) {
+  width: 56px !important;
+}
+
+.compact-dashboard-table th:nth-child(2),
+.compact-dashboard-table td:nth-child(2) {
+  width: 78px !important;
+}
+
+.compact-dashboard-table th:nth-child(3),
+.compact-dashboard-table td:nth-child(3) {
+  width: 130px !important;
+}
+
+.compact-dashboard-table th:nth-child(4),
+.compact-dashboard-table td:nth-child(4) {
+  width: 190px !important;
+}
+
+.compact-dashboard-table th:nth-child(5),
+.compact-dashboard-table td:nth-child(5) {
+  width: auto !important;
+}
+
+.compact-dashboard-table th:nth-child(6),
+.compact-dashboard-table td:nth-child(6) {
+  width: 105px !important;
+}
+
+.compact-dashboard-table th:nth-child(7),
+.compact-dashboard-table td:nth-child(7) {
+  width: 130px !important;
+}
+
+.compact-dashboard-table th:nth-child(8),
+.compact-dashboard-table td:nth-child(8) {
+  width: 50px !important;
+}
+
+.roadmap-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.roadmap-grid div {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.roadmap-grid strong,
+.roadmap-grid span {
+  display: block;
+}
+
+.roadmap-grid strong {
+  color: #07111f;
+  margin-bottom: 8px;
+}
+
+.roadmap-grid span {
+  color: #64748b;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .topbar-actions,
+  .user-pill {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .roadmap-grid {
+    grid-template-columns: 1fr;
+  }
+}
