@@ -106,6 +106,9 @@ export function Shell({
       document.cookie = `investflow-role=${perfilAutenticado.perfil}; ${options}`;
       document.cookie = `investflow-user-name=${encodeURIComponent(perfilAutenticado.nome)}; ${options}`;
       document.cookie = `investflow-user-email=${encodeURIComponent(perfilAutenticado.email)}; ${options}`;
+      document.cookie = `investflow-filial-id=${encodeURIComponent(perfilAutenticado.filial_id ?? "")}; ${options}`;
+      document.cookie = `investflow-diretoria-id=${encodeURIComponent(perfilAutenticado.diretoria_id ?? "")}; ${options}`;
+      document.cookie = `investflow-diretoria-nome=${encodeURIComponent(perfilAutenticado.diretoria_nome ?? "")}; ${options}`;
 
       if (!canAccessPath(perfilAutenticado.perfil, pathname)) {
         router.push("/dashboard");
@@ -144,6 +147,9 @@ export function Shell({
     document.cookie = `investflow-role=; ${expirado}`;
     document.cookie = `investflow-user-name=; ${expirado}`;
     document.cookie = `investflow-user-email=; ${expirado}`;
+    document.cookie = `investflow-filial-id=; ${expirado}`;
+    document.cookie = `investflow-diretoria-id=; ${expirado}`;
+    document.cookie = `investflow-diretoria-nome=; ${expirado}`;
 
     router.push("/login");
     router.refresh();

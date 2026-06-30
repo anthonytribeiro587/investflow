@@ -16,6 +16,59 @@ export type DemoUser = {
   status: string;
 };
 
+export type UserScope = {
+  perfil: UserRole;
+  email?: string | null;
+  filialId?: string | null;
+  diretoriaId?: string | null;
+  diretoriaNome?: string | null;
+};
+
+export const demoDiretorias = [
+  {
+    id: "9cdf2089-1296-4d09-a68e-625abdd6568a",
+    nome: "Diretoria Operacional",
+    diretor: "Diretor Operacional",
+    email: "diretor1@investflowdemo.com",
+  },
+  {
+    id: "b146f1af-8e16-4534-b51e-1b3389beaf4b",
+    nome: "Diretoria Expansão",
+    diretor: "Diretor Expansão",
+    email: "diretor2@investflowdemo.com",
+  },
+  {
+    id: "383b2a8a-47d9-4da2-980d-7fc6269d3715",
+    nome: "Diretoria Administrativa",
+    diretor: "Diretor Administrativo",
+    email: "diretor3@investflowdemo.com",
+  },
+  {
+    id: "2af079c3-9a1b-478a-a138-d4aac4f0de72",
+    nome: "Diretoria Financeira",
+    diretor: "Diretor Financeiro",
+    email: "diretor4@investflowdemo.com",
+  },
+] as const;
+
+const demoDiretoriaByEmail = Object.fromEntries(
+  demoDiretorias.map((diretoria) => [diretoria.email, diretoria])
+);
+
+const demoDiretoriaById = Object.fromEntries(
+  demoDiretorias.map((diretoria) => [diretoria.id, diretoria])
+);
+
+export function getDemoDirectorScopeByEmail(email?: string | null) {
+  const normalizado = String(email ?? "").toLowerCase().trim();
+  return demoDiretoriaByEmail[normalizado] ?? null;
+}
+
+export function getDemoDirectorScopeById(id?: string | null) {
+  const normalizado = String(id ?? "").trim();
+  return demoDiretoriaById[normalizado] ?? null;
+}
+
 export const demoUsers: DemoUser[] = [
   {
     nome: "Anthony Ribeiro",
@@ -33,14 +86,14 @@ export const demoUsers: DemoUser[] = [
     vinculo: "Unidade 01 — Centro",
     status: "Ativo",
   },
-  {
-    nome: "Diretor 01",
-    email: "diretor1@investflowdemo.com",
-    perfil: "diretoria",
+  ...demoDiretorias.map((diretoria) => ({
+    nome: diretoria.diretor,
+    email: diretoria.email,
+    perfil: "diretoria" as UserRole,
     perfilLabel: "Diretoria",
-    vinculo: "Diretoria Operacional",
+    vinculo: diretoria.nome,
     status: "Ativo",
-  },
+  })),
   {
     nome: "Patrimônio 01",
     email: "patrimonio1@investflowdemo.com",
@@ -80,6 +133,9 @@ const emailRoleAliases: Record<string, UserRole> = {
   "solicitante@investflowdemo.com": "solicitante",
 
   "diretor1@investflowdemo.com": "diretoria",
+  "diretor2@investflowdemo.com": "diretoria",
+  "diretor3@investflowdemo.com": "diretoria",
+  "diretor4@investflowdemo.com": "diretoria",
   "diretor01@investflowdemo.com": "diretoria",
   "diretor@investflow.com": "diretoria",
   "diretor.a@empresa.com": "diretoria",
@@ -151,12 +207,14 @@ export function getDemoUserByEmail(email?: string | null) {
   const perfil = knownRoleFromEmail(normalizado);
   if (!perfil) return null;
 
+  const diretoria = getDemoDirectorScopeByEmail(normalizado);
+
   return {
-    nome: roleLabel(perfil),
+    nome: diretoria?.diretor || roleLabel(perfil),
     email: normalizado,
     perfil,
     perfilLabel: roleLabel(perfil),
-    vinculo: perfil === "admin" ? "Todas as áreas" : "Fluxo operacional",
+    vinculo: diretoria?.nome || (perfil === "admin" ? "Todas as áreas" : "Fluxo operacional"),
     status: "Ativo",
   } satisfies DemoUser;
 }
@@ -166,6 +224,8 @@ type UsuarioPerfilRow = {
   email: string | null;
   perfil: string | null;
   ativo: boolean | null;
+  filial_id: string | null;
+  diretoria_id: string | null;
 };
 
 async function buscarPerfilPorCampo(
@@ -175,7 +235,7 @@ async function buscarPerfilPorCampo(
 ): Promise<UsuarioPerfilRow | null> {
   const { data, error } = await supabaseClient
     .from("usuarios")
-    .select("nome, email, perfil, ativo")
+    .select("nome, email, perfil, ativo, filial_id, diretoria_id")
     .eq(campo, valor)
     .limit(1);
 
@@ -208,11 +268,41 @@ export async function getProfileForAuthUser(
     return null;
   }
 
+  const demoDiretoria = getDemoDirectorScopeByEmail(email) || getDemoDirectorScopeById(perfilBanco?.diretoria_id);
+
   return {
-    nome: perfilBanco?.nome || email || roleLabel(perfilConhecido),
+    nome: perfilBanco?.nome || demoDiretoria?.diretor || email || roleLabel(perfilConhecido),
     email: perfilBanco?.email || email,
     perfil: perfilConhecido,
+    filial_id: perfilBanco?.filial_id ?? null,
+    diretoria_id: perfilBanco?.diretoria_id || demoDiretoria?.id || null,
+    diretoria_nome: demoDiretoria?.nome || null,
   };
+}
+
+export function rowMatchesUserScope(row: any, scope: UserScope) {
+  const perfil = normalizeRole(scope.perfil);
+
+  if (perfil === "admin") return true;
+
+  if (perfil === "diretoria") {
+    const diretoriaId = String(scope.diretoriaId ?? "").trim();
+    const diretoriaNome = String(scope.diretoriaNome ?? "").trim();
+    const rowDiretoriaId = String(row?.diretoria_id ?? row?.diretoriaId ?? "").trim();
+    const rowDiretoriaNome = String(row?.diretoria_nome ?? row?.diretoriaNome ?? row?.area ?? "").trim();
+
+    if (diretoriaId && rowDiretoriaId) return rowDiretoriaId === diretoriaId;
+    if (diretoriaNome && rowDiretoriaNome) return rowDiretoriaNome === diretoriaNome;
+    return false;
+  }
+
+  if (perfil === "solicitante") {
+    const filialId = String(scope.filialId ?? "").trim();
+    const rowFilialId = String(row?.filial_id ?? row?.filialId ?? "").trim();
+    if (filialId && rowFilialId) return rowFilialId === filialId;
+  }
+
+  return true;
 }
 
 const allowedPrefixes: Record<UserRole, string[]> = {

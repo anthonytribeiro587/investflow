@@ -17,21 +17,21 @@ export const requests = [
 ];
 
 export const filiais = [
-  { codigo: "U001", filial: "Unidade 01 — Centro", area: "Diretoria Operacional", diretor: "Diretoria Demo", gerente: "Solicitante Loja 01", cidade: "Metropolitana" },
-  { codigo: "U002", filial: "Unidade 02 — Norte", area: "Diretoria Operacional", diretor: "Diretoria Demo", gerente: "Solicitante Loja 02", cidade: "Metropolitana" },
-  { codigo: "U003", filial: "Unidade 03 — Sul", area: "Diretoria Expansão", diretor: "Diretoria Demo", gerente: "Solicitante Loja 03", cidade: "Metropolitana" },
-  { codigo: "U004", filial: "Unidade 04 — Vale", area: "Diretoria Expansão", diretor: "Diretoria Demo", gerente: "Solicitante Loja 04", cidade: "Interior" },
-  { codigo: "U005", filial: "Unidade 05 — Litoral", area: "Diretoria Administrativa", diretor: "Diretoria Demo", gerente: "Solicitante Loja 05", cidade: "Litoral" },
-  { codigo: "U006", filial: "Unidade 06 — Serra", area: "Diretoria Administrativa", diretor: "Diretoria Demo", gerente: "Solicitante Loja 06", cidade: "Interior" },
-  { codigo: "U007", filial: "Unidade 07 — Industrial", area: "Diretoria Financeira", diretor: "Diretoria Demo", gerente: "Solicitante Loja 07", cidade: "Metropolitana" },
-  { codigo: "U008", filial: "Unidade 08 — Comercial", area: "Diretoria Financeira", diretor: "Diretoria Demo", gerente: "Solicitante Loja 08", cidade: "Interior" }
+  { codigo: "U001", filial: "Unidade 01 — Centro", area: "Diretoria Operacional", diretor: "Diretor Operacional", gerente: "Solicitante Loja 01", cidade: "Metropolitana" },
+  { codigo: "U002", filial: "Unidade 02 — Norte", area: "Diretoria Operacional", diretor: "Diretor Operacional", gerente: "Solicitante Loja 02", cidade: "Metropolitana" },
+  { codigo: "U003", filial: "Unidade 03 — Sul", area: "Diretoria Expansão", diretor: "Diretor Expansão", gerente: "Solicitante Loja 03", cidade: "Metropolitana" },
+  { codigo: "U004", filial: "Unidade 04 — Vale", area: "Diretoria Expansão", diretor: "Diretor Expansão", gerente: "Solicitante Loja 04", cidade: "Interior" },
+  { codigo: "U005", filial: "Unidade 05 — Litoral", area: "Diretoria Administrativa", diretor: "Diretor Administrativo", gerente: "Solicitante Loja 05", cidade: "Litoral" },
+  { codigo: "U006", filial: "Unidade 06 — Serra", area: "Diretoria Administrativa", diretor: "Diretor Administrativo", gerente: "Solicitante Loja 06", cidade: "Interior" },
+  { codigo: "U007", filial: "Unidade 07 — Industrial", area: "Diretoria Financeira", diretor: "Diretor Financeiro", gerente: "Solicitante Loja 07", cidade: "Metropolitana" },
+  { codigo: "U008", filial: "Unidade 08 — Comercial", area: "Diretoria Financeira", diretor: "Diretor Financeiro", gerente: "Solicitante Loja 08", cidade: "Interior" }
 ];
 
 export const diretorias = [
-  { area: "Diretoria Operacional", diretor: "Diretoria Demo", filiais: 2, status: "Ativa" },
-  { area: "Diretoria Expansão", diretor: "Diretoria Demo", filiais: 2, status: "Ativa" },
-  { area: "Diretoria Administrativa", diretor: "Diretoria Demo", filiais: 2, status: "Ativa" },
-  { area: "Diretoria Financeira", diretor: "Diretoria Demo", filiais: 2, status: "Ativa" }
+  { area: "Diretoria Operacional", diretor: "Diretor Operacional", filiais: 2, status: "Ativa" },
+  { area: "Diretoria Expansão", diretor: "Diretor Expansão", filiais: 2, status: "Ativa" },
+  { area: "Diretoria Administrativa", diretor: "Diretor Administrativo", filiais: 2, status: "Ativa" },
+  { area: "Diretoria Financeira", diretor: "Diretor Financeiro", filiais: 2, status: "Ativa" }
 ];
 
 export const catalog = {

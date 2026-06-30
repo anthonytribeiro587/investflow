@@ -96,6 +96,84 @@ insert into public.usuarios (id, auth_user_id, nome, email, perfil, filial_id, d
 select '1ff6f553-f578-4ff0-af00-60e8a7a5207a', NULL, 'Compras/Realizações 01', 'compras1@investflowdemo.com', 'orcamento_compras', NULL, '2af079c3-9a1b-478a-a138-d4aac4f0de72', true, now()
 where not exists (select 1 from public.usuarios where lower(email) = 'compras1@investflowdemo.com');
 
+
+-- Regras de diretoria por usuário: cada diretoria enxerga apenas suas filiais.
+-- E-mails criados no Supabase Auth:
+-- diretor1@investflowdemo.com -> Diretoria Operacional
+-- diretor2@investflowdemo.com -> Diretoria Expansão
+-- diretor3@investflowdemo.com -> Diretoria Administrativa
+-- diretor4@investflowdemo.com -> Diretoria Financeira
+
+update public.diretorias
+set supervisor_diretor = case id::text
+  when '9cdf2089-1296-4d09-a68e-625abdd6568a' then 'Diretor Operacional'
+  when 'b146f1af-8e16-4534-b51e-1b3389beaf4b' then 'Diretor Expansão'
+  when '383b2a8a-47d9-4da2-980d-7fc6269d3715' then 'Diretor Administrativo'
+  when '2af079c3-9a1b-478a-a138-d4aac4f0de72' then 'Diretor Financeiro'
+  else supervisor_diretor
+end
+where id::text in (
+  '9cdf2089-1296-4d09-a68e-625abdd6568a',
+  'b146f1af-8e16-4534-b51e-1b3389beaf4b',
+  '383b2a8a-47d9-4da2-980d-7fc6269d3715',
+  '2af079c3-9a1b-478a-a138-d4aac4f0de72'
+);
+
+update public.filiais
+set diretor_responsavel = case diretoria_id::text
+  when '9cdf2089-1296-4d09-a68e-625abdd6568a' then 'Diretor Operacional'
+  when 'b146f1af-8e16-4534-b51e-1b3389beaf4b' then 'Diretor Expansão'
+  when '383b2a8a-47d9-4da2-980d-7fc6269d3715' then 'Diretor Administrativo'
+  when '2af079c3-9a1b-478a-a138-d4aac4f0de72' then 'Diretor Financeiro'
+  else diretor_responsavel
+end,
+area = case diretoria_id::text
+  when '9cdf2089-1296-4d09-a68e-625abdd6568a' then 'Diretoria Operacional'
+  when 'b146f1af-8e16-4534-b51e-1b3389beaf4b' then 'Diretoria Expansão'
+  when '383b2a8a-47d9-4da2-980d-7fc6269d3715' then 'Diretoria Administrativa'
+  when '2af079c3-9a1b-478a-a138-d4aac4f0de72' then 'Diretoria Financeira'
+  else area
+end
+where diretoria_id::text in (
+  '9cdf2089-1296-4d09-a68e-625abdd6568a',
+  'b146f1af-8e16-4534-b51e-1b3389beaf4b',
+  '383b2a8a-47d9-4da2-980d-7fc6269d3715',
+  '2af079c3-9a1b-478a-a138-d4aac4f0de72'
+);
+
+update public.usuarios
+set nome = 'Diretor Operacional', email = 'diretor1@investflowdemo.com', perfil = 'diretor', diretoria_id = '9cdf2089-1296-4d09-a68e-625abdd6568a', filial_id = NULL, ativo = true
+where lower(email) in ('diretor1@investflowdemo.com', 'diretor01@investflowdemo.com', 'diretoria@investflowdemo.com')
+   or id = '46024949-77dc-452c-b5e0-5b5567425c9d';
+
+insert into public.usuarios (id, auth_user_id, nome, email, perfil, filial_id, diretoria_id, ativo, created_at)
+select '46024949-77dc-452c-b5e0-5b5567425c9d', NULL, 'Diretor Operacional', 'diretor1@investflowdemo.com', 'diretor', NULL, '9cdf2089-1296-4d09-a68e-625abdd6568a', true, now()
+where not exists (select 1 from public.usuarios where lower(email) = 'diretor1@investflowdemo.com');
+
+update public.usuarios
+set nome = 'Diretor Expansão', email = 'diretor2@investflowdemo.com', perfil = 'diretor', diretoria_id = 'b146f1af-8e16-4534-b51e-1b3389beaf4b', filial_id = NULL, ativo = true
+where lower(email) = 'diretor2@investflowdemo.com';
+
+insert into public.usuarios (id, auth_user_id, nome, email, perfil, filial_id, diretoria_id, ativo, created_at)
+select 'fd2f82ec-2bfa-4c03-b1d3-904cbb73b902', NULL, 'Diretor Expansão', 'diretor2@investflowdemo.com', 'diretor', NULL, 'b146f1af-8e16-4534-b51e-1b3389beaf4b', true, now()
+where not exists (select 1 from public.usuarios where lower(email) = 'diretor2@investflowdemo.com');
+
+update public.usuarios
+set nome = 'Diretor Administrativo', email = 'diretor3@investflowdemo.com', perfil = 'diretor', diretoria_id = '383b2a8a-47d9-4da2-980d-7fc6269d3715', filial_id = NULL, ativo = true
+where lower(email) = 'diretor3@investflowdemo.com';
+
+insert into public.usuarios (id, auth_user_id, nome, email, perfil, filial_id, diretoria_id, ativo, created_at)
+select '2f757d61-d5e0-4b33-bf9b-16a49a33de8b', NULL, 'Diretor Administrativo', 'diretor3@investflowdemo.com', 'diretor', NULL, '383b2a8a-47d9-4da2-980d-7fc6269d3715', true, now()
+where not exists (select 1 from public.usuarios where lower(email) = 'diretor3@investflowdemo.com');
+
+update public.usuarios
+set nome = 'Diretor Financeiro', email = 'diretor4@investflowdemo.com', perfil = 'diretor', diretoria_id = '2af079c3-9a1b-478a-a138-d4aac4f0de72', filial_id = NULL, ativo = true
+where lower(email) = 'diretor4@investflowdemo.com';
+
+insert into public.usuarios (id, auth_user_id, nome, email, perfil, filial_id, diretoria_id, ativo, created_at)
+select 'd09fa08f-7339-4b75-9d9f-c330a6ef2cc2', NULL, 'Diretor Financeiro', 'diretor4@investflowdemo.com', 'diretor', NULL, '2af079c3-9a1b-478a-a138-d4aac4f0de72', true, now()
+where not exists (select 1 from public.usuarios where lower(email) = 'diretor4@investflowdemo.com');
+
 -- Vincula public.usuarios aos usuários reais do Supabase Auth pelo e-mail.
 -- Essa parte só funciona para os e-mails que já existirem em Authentication > Users.
 update public.usuarios u
@@ -120,7 +198,9 @@ select
   f.codigo_filial,
   f.nome_filial,
   f.cidade,
+  d.id as diretoria_id,
   d.nome as diretoria_nome,
+  d.supervisor_diretor as diretor_responsavel,
   st.nome as setor_nome,
   coalesce(p.nome_projeto, s.projeto_orcamento) as nome_projeto,
   ip.tipo_movimento,

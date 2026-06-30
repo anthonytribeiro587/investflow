@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { DetailInfoGrid } from "@/components/DetailInfoGrid";
 import { KpiCard } from "@/components/KpiCard";
 import { Shell } from "@/components/Shell";
+import { getDemoDirectorScopeByEmail } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
 type StatusFiltro = "pendentes" | "aprovadas" | "ajustes" | "rejeitadas" | "todas";
@@ -26,9 +27,38 @@ type Solicitacao = {
   created_at: string;
 };
 
-type Filial = { id: string; nome_filial: string };
+type Filial = { id: string; nome_filial: string; diretoria_id: string | null };
 type Setor = { id: string; nome: string };
 type ItemCatalogo = { id: string; nome_item: string };
+
+function lerCookie(nome: string) {
+  if (typeof document === "undefined") return "";
+  return document.cookie
+    .split(";")
+    .map((item) => item.trim())
+    .find((item) => item.startsWith(`${nome}=`))
+    ?.split("=")
+    .slice(1)
+    .join("=") ?? "";
+}
+
+function decodificar(valor: string) {
+  try {
+    return decodeURIComponent(valor);
+  } catch {
+    return valor;
+  }
+}
+
+function escopoDiretoriaAtual() {
+  const email = decodificar(lerCookie("investflow-user-email")).toLowerCase().trim();
+  const fallback = getDemoDirectorScopeByEmail(email);
+
+  return {
+    diretoriaId: decodificar(lerCookie("investflow-diretoria-id")) || fallback?.id || "",
+    diretoriaNome: decodificar(lerCookie("investflow-diretoria-nome")) || fallback?.nome || "",
+  };
+}
 
 export default function Diretor() {
   const [solicitacoes, setSolicitacoes] = useState<Solicitacao[]>([]);
@@ -55,26 +85,46 @@ export default function Diretor() {
   async function carregarDados() {
     if (!supabase) return;
 
-    const [solicitacoesResp, filiaisResp, setoresResp, itensResp] =
-      await Promise.all([
-        supabase
-          .from("solicitacoes")
-          .select("*")
-          .in("status", [
-            "enviada",
-            "ajuste_solicitado",
-            "aprovada_diretoria",
-            "rejeitada_diretoria",
-          ])
-          .order("created_at", { ascending: false }),
+    const escopo = escopoDiretoriaAtual();
 
-        supabase.from("filiais").select("id, nome_filial"),
-        supabase.from("setores").select("id, nome"),
-        supabase.from("itens_catalogo").select("id, nome_item"),
-      ]);
+    const [filiaisResp, setoresResp, itensResp] = await Promise.all([
+      supabase.from("filiais").select("id, nome_filial, diretoria_id").eq("ativo", true),
+      supabase.from("setores").select("id, nome"),
+      supabase.from("itens_catalogo").select("id, nome_item"),
+    ]);
+
+    const filiaisDaDiretoria = ((filiaisResp.data ?? []) as Filial[]).filter((filial) => {
+      if (!escopo.diretoriaId) return true;
+      return filial.diretoria_id === escopo.diretoriaId;
+    });
+
+    const idsFiliais = filiaisDaDiretoria.map((filial) => filial.id);
+
+    let query = supabase
+      .from("solicitacoes")
+      .select("*")
+      .in("status", [
+        "enviada",
+        "ajuste_solicitado",
+        "aprovada_diretoria",
+        "rejeitada_diretoria",
+      ])
+      .order("created_at", { ascending: false });
+
+    if (idsFiliais.length > 0) {
+      query = query.in("filial_id", idsFiliais);
+    } else if (escopo.diretoriaId) {
+      setSolicitacoes([]);
+      setFiliais([]);
+      setSetores(setoresResp.data ?? []);
+      setItens(itensResp.data ?? []);
+      return;
+    }
+
+    const solicitacoesResp = await query;
 
     setSolicitacoes(solicitacoesResp.data ?? []);
-    setFiliais(filiaisResp.data ?? []);
+    setFiliais(filiaisDaDiretoria);
     setSetores(setoresResp.data ?? []);
     setItens(itensResp.data ?? []);
   }
@@ -513,7 +563,7 @@ export default function Diretor() {
   return (
     <Shell
       title="Aprovação Diretoria"
-      subtitle="Avaliação e aprovação das solicitações de investimento."
+      subtitle="Avaliação das solicitações vinculadas à diretoria do usuário logado."
     >
       <section className="kpi-grid">
         <KpiCard label="Pendentes" value={String(pendentes.length)} variant="orange" />
@@ -531,8 +581,8 @@ export default function Diretor() {
       <section className="panel">
         <div className="panel-top">
           <div>
-            <h2>Solicitações da diretoria</h2>
-            <p>Analise as demandas, consulte os detalhes e defina o semestre final.</p>
+            <h2>Solicitações da sua diretoria</h2>
+            <p>Analise apenas as demandas das unidades vinculadas à sua diretoria.</p>
           </div>
 
           {aba === "pendentes" && (

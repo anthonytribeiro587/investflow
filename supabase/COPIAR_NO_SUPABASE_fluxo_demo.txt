@@ -22,10 +22,10 @@ delete from public.setores;
 delete from public.diretorias;
 
 insert into public.diretorias (id, nome, ativo, created_at, supervisor_diretor) values
-  ('9cdf2089-1296-4d09-a68e-625abdd6568a', 'Diretoria Operacional', true, now(), 'Diretor Demo 01'),
-  ('b146f1af-8e16-4534-b51e-1b3389beaf4b', 'Diretoria Expansão', true, now(), 'Diretor Demo 02'),
-  ('383b2a8a-47d9-4da2-980d-7fc6269d3715', 'Diretoria Administrativa', true, now(), 'Diretor Demo 03'),
-  ('2af079c3-9a1b-478a-a138-d4aac4f0de72', 'Diretoria Financeira', true, now(), 'Diretor Demo 04');
+  ('9cdf2089-1296-4d09-a68e-625abdd6568a', 'Diretoria Operacional', true, now(), 'Diretor Operacional'),
+  ('b146f1af-8e16-4534-b51e-1b3389beaf4b', 'Diretoria Expansão', true, now(), 'Diretor Expansão'),
+  ('383b2a8a-47d9-4da2-980d-7fc6269d3715', 'Diretoria Administrativa', true, now(), 'Diretor Administrativo'),
+  ('2af079c3-9a1b-478a-a138-d4aac4f0de72', 'Diretoria Financeira', true, now(), 'Diretor Financeiro');
 
 insert into public.setores (id, nome, ativo, created_at) values
   ('149bbdad-a88d-4049-86a4-8c8efcf6f7d5', 'Obras e Reformas', true, now()),
@@ -36,14 +36,14 @@ insert into public.setores (id, nome, ativo, created_at) values
   ('30c0a32f-1e1b-49bd-a618-c3c3cc9bfa88', 'Operações', true, now());
 
 insert into public.filiais (id, codigo_filial, nome_filial, bandeira, cidade, area, gerente_nome, gerente_email, diretoria_id, ativo, created_at, empresa, segmento, centro_lucro, diretor_responsavel) values
-  ('235bde73-f097-4ba5-afd3-58a393cbf231', 'U001', 'Unidade 01 — Centro', 'Demo', 'Metropolitana', 'Área Demo', 'Gerente Demo 001', 'u001@investflowdemo.com', '9cdf2089-1296-4d09-a68e-625abdd6568a', true, now(), 'Grupo Horizonte Demo', 'Operação fictícia', 'CL-001', 'Diretor Demo'),
-  ('0510e989-02ee-4ec7-b8aa-862783560789', 'U002', 'Unidade 02 — Norte', 'Demo', 'Metropolitana', 'Área Demo', 'Gerente Demo 002', 'u002@investflowdemo.com', '9cdf2089-1296-4d09-a68e-625abdd6568a', true, now(), 'Grupo Horizonte Demo', 'Operação fictícia', 'CL-002', 'Diretor Demo'),
-  ('2b60b344-4105-4800-9fb4-8a928335346d', 'U003', 'Unidade 03 — Sul', 'Demo', 'Metropolitana', 'Área Demo', 'Gerente Demo 003', 'u003@investflowdemo.com', 'b146f1af-8e16-4534-b51e-1b3389beaf4b', true, now(), 'Grupo Horizonte Demo', 'Operação fictícia', 'CL-003', 'Diretor Demo'),
-  ('bdf84a60-0b67-4146-909b-c8980ca0ff88', 'U004', 'Unidade 04 — Vale', 'Demo', 'Interior', 'Área Demo', 'Gerente Demo 004', 'u004@investflowdemo.com', 'b146f1af-8e16-4534-b51e-1b3389beaf4b', true, now(), 'Grupo Horizonte Demo', 'Operação fictícia', 'CL-004', 'Diretor Demo'),
-  ('d649ed82-6f03-4506-a565-806d2a2d42b4', 'U005', 'Unidade 05 — Litoral', 'Demo', 'Litoral', 'Área Demo', 'Gerente Demo 005', 'u005@investflowdemo.com', '383b2a8a-47d9-4da2-980d-7fc6269d3715', true, now(), 'Grupo Horizonte Demo', 'Operação fictícia', 'CL-005', 'Diretor Demo'),
-  ('62aa6930-f4a8-41f6-9cd2-dc0e6b4bfe4b', 'U006', 'Unidade 06 — Serra', 'Demo', 'Interior', 'Área Demo', 'Gerente Demo 006', 'u006@investflowdemo.com', '383b2a8a-47d9-4da2-980d-7fc6269d3715', true, now(), 'Grupo Horizonte Demo', 'Operação fictícia', 'CL-006', 'Diretor Demo'),
-  ('895ec1ed-d53c-4865-a9be-c84f08649b54', 'U007', 'Unidade 07 — Industrial', 'Demo', 'Metropolitana', 'Área Demo', 'Gerente Demo 007', 'u007@investflowdemo.com', '2af079c3-9a1b-478a-a138-d4aac4f0de72', true, now(), 'Grupo Horizonte Demo', 'Operação fictícia', 'CL-007', 'Diretor Demo'),
-  ('1dbfa2f9-98c4-428e-802c-0cf8a4d52d34', 'U008', 'Unidade 08 — Comercial', 'Demo', 'Interior', 'Área Demo', 'Gerente Demo 008', 'u008@investflowdemo.com', '2af079c3-9a1b-478a-a138-d4aac4f0de72', true, now(), 'Grupo Horizonte Demo', 'Operação fictícia', 'CL-008', 'Diretor Demo');
+  ('235bde73-f097-4ba5-afd3-58a393cbf231', 'U001', 'Unidade 01 — Centro', 'Demo', 'Metropolitana', 'Área Demo', 'Gerente Demo 001', 'u001@investflowdemo.com', '9cdf2089-1296-4d09-a68e-625abdd6568a', true, now(), 'Grupo Horizonte Demo', 'Operação fictícia', 'CL-001', 'Diretor Operacional'),
+  ('0510e989-02ee-4ec7-b8aa-862783560789', 'U002', 'Unidade 02 — Norte', 'Demo', 'Metropolitana', 'Área Demo', 'Gerente Demo 002', 'u002@investflowdemo.com', '9cdf2089-1296-4d09-a68e-625abdd6568a', true, now(), 'Grupo Horizonte Demo', 'Operação fictícia', 'CL-002', 'Diretor Operacional'),
+  ('2b60b344-4105-4800-9fb4-8a928335346d', 'U003', 'Unidade 03 — Sul', 'Demo', 'Metropolitana', 'Área Demo', 'Gerente Demo 003', 'u003@investflowdemo.com', 'b146f1af-8e16-4534-b51e-1b3389beaf4b', true, now(), 'Grupo Horizonte Demo', 'Operação fictícia', 'CL-003', 'Diretor Expansão'),
+  ('bdf84a60-0b67-4146-909b-c8980ca0ff88', 'U004', 'Unidade 04 — Vale', 'Demo', 'Interior', 'Área Demo', 'Gerente Demo 004', 'u004@investflowdemo.com', 'b146f1af-8e16-4534-b51e-1b3389beaf4b', true, now(), 'Grupo Horizonte Demo', 'Operação fictícia', 'CL-004', 'Diretor Expansão'),
+  ('d649ed82-6f03-4506-a565-806d2a2d42b4', 'U005', 'Unidade 05 — Litoral', 'Demo', 'Litoral', 'Área Demo', 'Gerente Demo 005', 'u005@investflowdemo.com', '383b2a8a-47d9-4da2-980d-7fc6269d3715', true, now(), 'Grupo Horizonte Demo', 'Operação fictícia', 'CL-005', 'Diretor Administrativo'),
+  ('62aa6930-f4a8-41f6-9cd2-dc0e6b4bfe4b', 'U006', 'Unidade 06 — Serra', 'Demo', 'Interior', 'Área Demo', 'Gerente Demo 006', 'u006@investflowdemo.com', '383b2a8a-47d9-4da2-980d-7fc6269d3715', true, now(), 'Grupo Horizonte Demo', 'Operação fictícia', 'CL-006', 'Diretor Administrativo'),
+  ('895ec1ed-d53c-4865-a9be-c84f08649b54', 'U007', 'Unidade 07 — Industrial', 'Demo', 'Metropolitana', 'Área Demo', 'Gerente Demo 007', 'u007@investflowdemo.com', '2af079c3-9a1b-478a-a138-d4aac4f0de72', true, now(), 'Grupo Horizonte Demo', 'Operação fictícia', 'CL-007', 'Diretor Financeiro'),
+  ('1dbfa2f9-98c4-428e-802c-0cf8a4d52d34', 'U008', 'Unidade 08 — Comercial', 'Demo', 'Interior', 'Área Demo', 'Gerente Demo 008', 'u008@investflowdemo.com', '2af079c3-9a1b-478a-a138-d4aac4f0de72', true, now(), 'Grupo Horizonte Demo', 'Operação fictícia', 'CL-008', 'Diretor Financeiro');
 
 insert into public.itens_catalogo (id, setor_id, nome_item, ativo, created_at) values
   ('4708415c-3b98-40af-b572-5613ec3e4bb4', '149bbdad-a88d-4049-86a4-8c8efcf6f7d5', 'Reforma de fachada', true, now()),

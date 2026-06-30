@@ -17,12 +17,22 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState("");
 
-  function gravarSessao(params: { nome: string; perfil: string; email: string }) {
+  function gravarSessao(params: {
+    nome: string;
+    perfil: string;
+    email: string;
+    filial_id?: string | null;
+    diretoria_id?: string | null;
+    diretoria_nome?: string | null;
+  }) {
     const options = cookieOptions();
     document.cookie = `investflow-auth=true; ${options}`;
     document.cookie = `investflow-role=${params.perfil}; ${options}`;
     document.cookie = `investflow-user-name=${encodeURIComponent(params.nome)}; ${options}`;
     document.cookie = `investflow-user-email=${encodeURIComponent(params.email)}; ${options}`;
+    document.cookie = `investflow-filial-id=${encodeURIComponent(params.filial_id ?? "")}; ${options}`;
+    document.cookie = `investflow-diretoria-id=${encodeURIComponent(params.diretoria_id ?? "")}; ${options}`;
+    document.cookie = `investflow-diretoria-nome=${encodeURIComponent(params.diretoria_nome ?? "")}; ${options}`;
   }
 
   async function entrar(e: React.FormEvent) {
@@ -62,7 +72,14 @@ export default function LoginPage() {
         return;
       }
 
-      gravarSessao({ nome: perfil.nome, perfil: perfil.perfil, email: perfil.email });
+      gravarSessao({
+        nome: perfil.nome,
+        perfil: perfil.perfil,
+        email: perfil.email,
+        filial_id: perfil.filial_id,
+        diretoria_id: perfil.diretoria_id,
+        diretoria_nome: perfil.diretoria_nome,
+      });
       router.push("/dashboard");
       router.refresh();
     } finally {

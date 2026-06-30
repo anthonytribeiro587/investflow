@@ -2,7 +2,11 @@ import { KpiCard } from "@/components/KpiCard";
 import { Shell } from "@/components/Shell";
 import { brl } from "@/lib/data";
 import { DEMO_QUERY_LIMIT, DEMO_TABLE_LIMIT, sampleRows } from "@/lib/demo";
+import { getDemoDirectorScopeByEmail, normalizeRole, rowMatchesUserScope } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
+import { cookies } from "next/headers";
+
+export const dynamic = "force-dynamic";
 
 const etapas = [
   { label: "Diretoria", statuses: ["enviada", "ajuste_solicitado", "aprovada_diretoria", "rejeitada_diretoria"] },
@@ -61,6 +65,14 @@ function contarStatus(base: any[], statuses: readonly string[]) {
   return base.filter((item) => statuses.includes(normalizar(item.status))).length;
 }
 
+function decodificar(valor?: string) {
+  try {
+    return decodeURIComponent(valor ?? "");
+  } catch {
+    return valor ?? "";
+  }
+}
+
 export default async function Dashboard() {
   if (!supabase) {
     return (
@@ -76,13 +88,25 @@ export default async function Dashboard() {
     );
   }
 
+  const cookieStore = await cookies();
+  const emailCookie = decodificar(cookieStore.get("investflow-user-email")?.value);
+  const diretoriaFallback = getDemoDirectorScopeByEmail(emailCookie);
+  const escopo = {
+    perfil: normalizeRole(cookieStore.get("investflow-role")?.value || "admin"),
+    email: emailCookie,
+    filialId: decodificar(cookieStore.get("investflow-filial-id")?.value),
+    diretoriaId: decodificar(cookieStore.get("investflow-diretoria-id")?.value) || diretoriaFallback?.id || "",
+    diretoriaNome: decodificar(cookieStore.get("investflow-diretoria-nome")?.value) || diretoriaFallback?.nome || "",
+  };
+
   const { data: central } = await supabase
     .from("vw_central_investimentos")
     .select("*")
     .order("created_at", { ascending: false })
     .limit(DEMO_QUERY_LIMIT);
 
-  const base = sampleRows(central ?? []);
+  const baseCompleta = sampleRows(central ?? []);
+  const base = baseCompleta.filter((item: any) => rowMatchesUserScope(item, escopo));
   const amostraTabela = base.slice(0, DEMO_TABLE_LIMIT);
 
   const aguardandoDiretoria = contarStatus(base, ["enviada"]);
@@ -111,9 +135,8 @@ export default async function Dashboard() {
       subtitle="Acompanhamento gerencial conectado à base demo do fluxo"
     >
       <section className="demo-note">
-        <strong>Modo apresentação:</strong> este painel usa uma base fictícia,
-        reduzida e vinculada às mesmas etapas do sistema: solicitações, diretoria,
-        patrimônio, projetos e orçamentos.
+        <strong>Modo apresentação:</strong> este painel respeita o perfil logado.
+        Diretores enxergam somente as unidades da própria diretoria; o admin enxerga a base demo completa.
       </section>
 
       <section className="kpi-grid">

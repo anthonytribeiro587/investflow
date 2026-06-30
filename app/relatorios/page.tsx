@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Shell } from "@/components/Shell";
-import { defaultReportForRole, normalizeRole, type UserRole } from "@/lib/auth";
+import { defaultReportForRole, getDemoDirectorScopeByEmail, normalizeRole, rowMatchesUserScope, type UserRole } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
 
 type LinhaRelatorio = {
@@ -18,6 +18,7 @@ type LinhaRelatorio = {
   filial_id: string | null;
   codigo_filial: string | null;
   nome_filial: string | null;
+  diretoria_id: string | null;
   diretoria_nome: string | null;
   setor_nome: string | null;
   nome_projeto: string | null;
@@ -65,6 +66,14 @@ function lerCookie(nome: string) {
     ?.split("=")
     .slice(1)
     .join("=") ?? "";
+}
+
+function decodificar(valor: string) {
+  try {
+    return decodeURIComponent(valor);
+  } catch {
+    return valor;
+  }
 }
 
 function moeda(valor: number) {
@@ -143,11 +152,19 @@ export default function Relatorios() {
   const [anoFiltro, setAnoFiltro] = useState("todos");
   const [filialFiltro, setFilialFiltro] = useState("todos");
   const [diretoriaFiltro, setDiretoriaFiltro] = useState("todos");
+  const [filialUsuarioId, setFilialUsuarioId] = useState("");
+  const [diretoriaUsuarioId, setDiretoriaUsuarioId] = useState("");
+  const [diretoriaUsuarioNome, setDiretoriaUsuarioNome] = useState("");
 
   useEffect(() => {
     const role = normalizeRole(lerCookie("investflow-role") || "admin");
+    const email = decodificar(lerCookie("investflow-user-email")).toLowerCase().trim();
+    const fallback = getDemoDirectorScopeByEmail(email);
     setPerfil(role);
     setTipoRelatorio(defaultReportForRole(role) as TipoRelatorio);
+    setFilialUsuarioId(decodificar(lerCookie("investflow-filial-id")));
+    setDiretoriaUsuarioId(decodificar(lerCookie("investflow-diretoria-id")) || fallback?.id || "");
+    setDiretoriaUsuarioNome(decodificar(lerCookie("investflow-diretoria-nome")) || fallback?.nome || "");
     carregarDados();
   }, []);
 
@@ -181,29 +198,40 @@ export default function Relatorios() {
     return relatorios.filter((relatorio) => relatorio.id === padrao);
   }, [perfil]);
 
+  const linhasDoEscopo = useMemo(() => {
+    return linhas.filter((linha) =>
+      rowMatchesUserScope(linha, {
+        perfil,
+        filialId: filialUsuarioId,
+        diretoriaId: diretoriaUsuarioId,
+        diretoriaNome: diretoriaUsuarioNome,
+      })
+    );
+  }, [linhas, perfil, filialUsuarioId, diretoriaUsuarioId, diretoriaUsuarioNome]);
+
   const opcoesAno = useMemo(() => {
-    return Array.from(new Set(linhas.map((linha) => linha.ano).filter(Boolean))).sort();
-  }, [linhas]);
+    return Array.from(new Set(linhasDoEscopo.map((linha) => linha.ano).filter(Boolean))).sort();
+  }, [linhasDoEscopo]);
 
   const opcoesFilial = useMemo(() => {
-    return Array.from(new Set(linhas.map((linha) => linha.nome_filial).filter(Boolean))).sort() as string[];
-  }, [linhas]);
+    return Array.from(new Set(linhasDoEscopo.map((linha) => linha.nome_filial).filter(Boolean))).sort() as string[];
+  }, [linhasDoEscopo]);
 
   const opcoesDiretoria = useMemo(() => {
-    return Array.from(new Set(linhas.map((linha) => linha.diretoria_nome).filter(Boolean))).sort() as string[];
-  }, [linhas]);
+    return Array.from(new Set(linhasDoEscopo.map((linha) => linha.diretoria_nome).filter(Boolean))).sort() as string[];
+  }, [linhasDoEscopo]);
 
   const filtradas = useMemo(() => {
     const statuses = statusPorRelatorio[tipoRelatorio];
 
-    return linhas.filter((linha) => {
+    return linhasDoEscopo.filter((linha) => {
       const bateTipo = !statuses.length || statuses.includes(linha.status ?? "");
       const bateAno = anoFiltro === "todos" || String(linha.ano) === anoFiltro;
       const bateFilial = filialFiltro === "todos" || linha.nome_filial === filialFiltro;
       const bateDiretoria = diretoriaFiltro === "todos" || linha.diretoria_nome === diretoriaFiltro;
       return bateTipo && bateAno && bateFilial && bateDiretoria;
     });
-  }, [linhas, tipoRelatorio, anoFiltro, filialFiltro, diretoriaFiltro]);
+  }, [linhasDoEscopo, tipoRelatorio, anoFiltro, filialFiltro, diretoriaFiltro]);
 
   const relatorioAtual = relatorios.find((relatorio) => relatorio.id === tipoRelatorio) ?? relatorios[0];
   const orcados = filtradas.filter((linha) => linha.status === "orcamento_concluido");
@@ -252,7 +280,7 @@ export default function Relatorios() {
     >
       <div className="reports-page">
         <section className="demo-note">
-          Cada perfil acessa o relatório ligado ao seu fluxo. O admin enxerga a visão geral e os relatórios por etapa.
+          Cada perfil acessa o relatório ligado ao seu fluxo. Diretores enxergam somente as unidades vinculadas à própria diretoria.
         </section>
 
         <section className="report-tabs">
