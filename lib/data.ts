@@ -254,27 +254,3 @@ export async function getCrmData(): Promise<CrmData> {
     isDemo: false,
   };
 }
-
-// -----------------------------------------------------------------------------
-// Compatibilidade temporária
-// -----------------------------------------------------------------------------
-// Algumas páginas antigas do projeto InvestFlow/cadastros ainda podem existir no
-// repositório quando os arquivos são enviados pelo GitHub Web. Elas importam
-// estes nomes de @/lib/data. Mantemos exports seguros para o build não quebrar
-// enquanto esses arquivos antigos não forem removidos do repositório.
-
-export function brl(value: number | string | null | undefined) {
-  const amount = typeof value === "number" ? value : Number(value || 0);
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(Number.isFinite(amount) ? amount : 0);
-}
-
-export const filiais: any[] = [];
-export const diretorias: any[] = [];
-export const catalog: any[] = [];
-export const setores: any[] = [];
-export const usuarios: any[] = [];
-export const projetos: any[] = [];
-export const solicitacoes: any[] = [];
