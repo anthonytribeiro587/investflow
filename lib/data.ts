@@ -258,15 +258,10 @@ export async function getCrmData(): Promise<CrmData> {
 // -----------------------------------------------------------------------------
 // Compatibilidade temporária
 // -----------------------------------------------------------------------------
-// Páginas antigas do InvestFlow/cadastros ainda podem existir no repositório.
-// Elas importam estes nomes de @/lib/data. Mantemos exports com formatos amplos
-// para o build não quebrar enquanto esses arquivos antigos não forem removidos.
-
-type LegacyCatalog = any[] & {
-  setores: string[];
-  projetos: string[];
-  itens: string[];
-};
+// Algumas páginas antigas do projeto InvestFlow/cadastros ainda podem existir no
+// repositório quando os arquivos são enviados pelo GitHub Web. Elas importam
+// estes nomes de @/lib/data. Mantemos exports seguros para o build não quebrar
+// enquanto esses arquivos antigos não forem removidos do repositório.
 
 export function brl(value: number | string | null | undefined) {
   const amount = typeof value === "number" ? value : Number(value || 0);
@@ -276,62 +271,10 @@ export function brl(value: number | string | null | undefined) {
   }).format(Number.isFinite(amount) ? amount : 0);
 }
 
-export const filiais = [
-  { id: "001", codigo: "001", nome: "Filial Central", cidade: "Sapucaia do Sul", diretoria_id: "D01" },
-  { id: "002", codigo: "002", nome: "Filial Norte", cidade: "Canoas", diretoria_id: "D01" },
-  { id: "003", codigo: "003", nome: "Filial Serra", cidade: "Novo Hamburgo", diretoria_id: "D02" },
-];
-
-export const diretorias = [
-  { id: "D01", codigo: "D01", nome: "Operações" },
-  { id: "D02", codigo: "D02", nome: "Comercial" },
-  { id: "D03", codigo: "D03", nome: "Administrativo" },
-];
-
-const legacySetores = ["Operações", "Comercial", "Administrativo", "Tecnologia", "Manutenção"];
-const legacyProjetos = ["Expansão", "Reforma", "Tecnologia", "Manutenção", "Marketing"];
-const legacyItens = [
-  "Equipamento operacional",
-  "Mobiliário",
-  "Serviço de instalação",
-  "Material de obra",
-  "Software / sistema",
-];
-
-// Formato híbrido: funciona como array vazio se alguma tela antiga fizer catalog.map,
-// e também funciona como objeto se usar catalog.setores/projetos/itens.
-export const catalog: LegacyCatalog = Object.assign([], {
-  setores: legacySetores,
-  projetos: legacyProjetos,
-  itens: legacyItens,
-});
-
-export const setores = legacySetores.map((nome, index) => ({
-  id: `S${String(index + 1).padStart(2, "0")}`,
-  nome,
-}));
-
-export const projetos = legacyProjetos.map((nome, index) => ({
-  id: `P${String(index + 1).padStart(2, "0")}`,
-  nome_projeto: nome,
-  nome,
-}));
-
-export const itens = legacyItens.map((nome, index) => ({
-  id: `I${String(index + 1).padStart(2, "0")}`,
-  nome_item: nome,
-  nome,
-}));
-
-export const itensCatalogo = itens;
-
-export const usuarios = [
-  { id: "U01", nome: "Anthony", email: "anthony@nextlead.local", perfil: "admin", ativo: true },
-  { id: "U02", nome: "Felipe", email: "felipe@nextlead.local", perfil: "comercial", ativo: true },
-];
-
-export const solicitacoes = [] as any[];
-export const orcamentos = [] as any[];
-export const investimentos = [] as any[];
-export const patrimoniados = [] as any[];
-export const aprovacoes = [] as any[];
+export const filiais: any[] = [];
+export const diretorias: any[] = [];
+export const catalog: any[] = [];
+export const setores: any[] = [];
+export const usuarios: any[] = [];
+export const projetos: any[] = [];
+export const solicitacoes: any[] = [];
